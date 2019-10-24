@@ -140,10 +140,12 @@ gpointer queue_peek_tail(queue_t* q) {
 }
 
 /* *********************************************************** */
+/* queue_free method does not have to lock the mutex.
+It is not correct to call queue_free if the queue might
+still be in use. */
 
 void queue_free(queue_t* q) {
   assert(q);
-  pthread_mutex_lock(&q->mutex);
   element_t* e = q->head;
   while (e) {
     element_t* tmp = e;
@@ -152,7 +154,6 @@ void queue_free(queue_t* q) {
       q->free_func(tmp->value);
     free(tmp);
   }
-  pthread_mutex_unlock(&q->mutex);
   pthread_mutex_destroy(&q->mutex);
   free(q);
 }
