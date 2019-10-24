@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "queue.h"
 
@@ -11,6 +12,7 @@ struct queue_s {
   struct element_s* tail;
   unsigned int length;
   gfree_function free_func;
+  pthread_mutex_t mutex;
 };
 
 /* *********************************************************** */
@@ -34,6 +36,7 @@ queue_t* queue_init(gfree_function f) {
   q->length = 0;
   q->tail = q->head = NULL;
   q->free_func = f;
+  pthread_mutex_init(&q->mutex, NULL);
   return q;
 }
 
@@ -45,17 +48,20 @@ void queue_push_head(queue_t* q, gpointer v) {
   assert(e);
   e->value = v;
   e->prev = NULL;
+  pthread_mutex_lock(&q->mutex);
   e->next = q->head;
   if (q->head) q->head->prev = e;
   q->head = e;
   if (!q->tail) q->tail = e;
   q->length++;
+  pthread_mutex_unlock(&q->mutex);
 }
 
 /* *********************************************************** */
 
 gpointer queue_pop_tail(queue_t* q) {
   assert(q);
+  pthread_mutex_lock(&q->mutex);
   assert(q->length > 0);
   assert(q->tail);
   gpointer v = q->tail->value;
@@ -65,6 +71,7 @@ gpointer queue_pop_tail(queue_t* q) {
   q->tail = prev;
   q->length--;
   if (!q->tail) q->head = NULL;
+  pthread_mutex_unlock(&q->mutex);
   return v;
 }
 
@@ -72,9 +79,9 @@ gpointer queue_pop_tail(queue_t* q) {
 
 void queue_drop_tail(queue_t* q) {
   assert(q);
+  pthread_mutex_lock(&q->mutex);
   assert(q->length > 0);
   assert(q->tail);
-  gpointer v = q->tail->value;
   element_t* prev = q->tail->prev;
   if (prev) prev->next = NULL;
   if (q->free_func != NULL)
@@ -83,42 +90,60 @@ void queue_drop_tail(queue_t* q) {
   q->tail = prev;
   q->length--;
   if (!q->tail) q->head = NULL;
+  pthread_mutex_unlock(&q->mutex);
 }
 
 /* *********************************************************** */
 
-int queue_length(const queue_t* q) {
+int queue_length(queue_t* q) {
   assert(q);
-  return q->length;
+  int length;
+  pthread_mutex_lock(&q->mutex);
+  length = q->length;
+  pthread_mutex_unlock(&q->mutex);
+  return length;
 }
 
 /* *********************************************************** */
 
-bool queue_is_empty(const queue_t* q) {
+bool queue_is_empty(queue_t* q) {
   assert(q);
-  return (q->length == 0);
+  bool empty;
+  pthread_mutex_lock(&q->mutex);
+  empty = (q->length == 0);
+  pthread_mutex_unlock(&q->mutex);
+  return empty;
 }
 
 /* *********************************************************** */
 
 gpointer queue_peek_head(queue_t* q) {
   assert(q);
+  gpointer v;
+  pthread_mutex_lock(&q->mutex);
   assert(q->head);
-  return q->head->value;
+  v = q->head->value;
+  pthread_mutex_unlock(&q->mutex);
+  return v;
 }
 
 /* *********************************************************** */
 
 gpointer queue_peek_tail(queue_t* q) {
   assert(q);
+  gpointer v;
+  pthread_mutex_lock(&q->mutex);
   assert(q->tail);
-  return q->tail->value;
+  v = q->tail->value;
+  pthread_mutex_unlock(&q->mutex);
+  return v;
 }
 
 /* *********************************************************** */
 
 void queue_free(queue_t* q) {
   assert(q);
+  pthread_mutex_lock(&q->mutex);
   element_t* e = q->head;
   while (e) {
     element_t* tmp = e;
@@ -127,6 +152,8 @@ void queue_free(queue_t* q) {
       q->free_func(tmp->value);
     free(tmp);
   }
+  pthread_mutex_unlock(&q->mutex);
+  pthread_mutex_destroy(&q->mutex);
   free(q);
 }
 
