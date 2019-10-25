@@ -1,5 +1,5 @@
 CFLAGS= -std=gnu99 -Wall -Wextra -pedantic -g
-LDFLAGS=
+LDFLAGS= -lpthread
 
 ALL: googletest sample test_queue gtest_queue
 
