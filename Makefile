@@ -1,4 +1,4 @@
-CFLAGS= -std=c11 -Wall -Wextra -pedantic -g
+CFLAGS= -std=gnu99 -Wall -Wextra -pedantic -g
 LDFLAGS=
 
 ALL: googletest sample test_queue gtest_queue

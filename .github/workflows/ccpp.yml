@@ -5,7 +5,7 @@ on:
     branches:
     - 'gpointer'
     - 'gtest'
-    - 'threadsafe'
+    - 'threadsafe*'
 
 jobs:
   build:

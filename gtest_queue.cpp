@@ -120,15 +120,15 @@ TEST( QueueTest, Empty )
 typedef struct {
     int      threadnumber;
     queue_t *q;
-} thread_context_t;
+} thrd_context_t;
 
-static thread_context_t contexts[THREADS];
-static pthread_t        threads[THREADS];
+static thrd_context_t contexts[THREADS];
+static thrd_t         threads[THREADS];
 
-static void *
+static int
 thread_func( void *context )
 {
-    thread_context_t *ctx = (thread_context_t *)context;
+    thrd_context_t *ctx = (thrd_context_t *)context;
     for ( int i = 0; i < 100; i++ ) {
         mytype_t *ptr_in = (mytype_t *)malloc( sizeof( mytype_t ) );
         *ptr_in          = i + ctx->threadnumber;
@@ -136,7 +136,7 @@ thread_func( void *context )
         if ( i % 2 )
             queue_drop_tail( ctx->q );
     }
-    return NULL;
+    return 0;
 }
 
 TEST( QueueTest, ThreadSafe )
@@ -144,13 +144,13 @@ TEST( QueueTest, ThreadSafe )
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     queue_t *q = queue_init( myfree );
     for ( int i = 0; i < THREADS; i++ ) {
-        thread_context_t *ctx = contexts + i;
+        thrd_context_t *ctx = contexts + i;
         ctx->threadnumber     = i + 1;
         ctx->q                = q;
-        pthread_create( &threads[i], NULL, &thread_func, ctx );
+        thrd_create(&threads[i], &thread_func, ctx);
     }
     for ( int i = 0; i < THREADS; i++ ) {
-        pthread_join( threads[i], NULL );
+        thrd_join( threads[i], NULL );
     }
     EXPECT_EQ( queue_length( q ), ( 100 * THREADS ) / 2 );
     queue_free( q );
@@ -163,6 +163,5 @@ main( int argc, char **argv )
 {
     /* run google tests */
     ::testing::InitGoogleTest( &argc, argv );
-
     return RUN_ALL_TESTS();
 }

@@ -10,6 +10,11 @@
 #define QUEUE_H
 
 #include <stdbool.h>
+#ifdef __STDC_NO_THREADS__
+#include "c11threads.h"
+#else
+#include <threads.h>
+#endif
 
 //@{
 
@@ -21,7 +26,22 @@ typedef void ( *gfree_function )( gpointer data );
 /*                          QUEUE                              */
 /* *********************************************************** */
 
-typedef struct queue_s queue_t;
+struct queue_s {
+    struct element_s *head;
+    struct element_s *tail;
+    unsigned int      length;
+    gfree_function    free_func;
+    mtx_t             mutex;
+};
+
+struct element_s {
+    gpointer          value;
+    struct element_s *next;
+    struct element_s *prev;
+};
+
+typedef struct queue_s   queue_t;
+typedef struct element_s element_t;
 
 queue_t *queue_init( gfree_function free_func );
 void     queue_push_head( queue_t *q, gpointer v );
