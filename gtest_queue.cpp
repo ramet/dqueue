@@ -131,8 +131,9 @@ thread_func( void *context )
     thread_context_t *ctx = (thread_context_t *)context;
     for ( int i = 0; i < 100; i++ ) {
         mytype_t *ptr_in = (mytype_t *)malloc( sizeof( mytype_t ) );
+        *ptr_in          = i + ctx->threadnumber;
         queue_push_head( ctx->q, ptr_in );
-        if ( !queue_is_empty( ctx->q ) )
+        if ( i % 2 )
             queue_drop_tail( ctx->q );
     }
     return NULL;
@@ -140,6 +141,7 @@ thread_func( void *context )
 
 TEST( QueueTest, ThreadSafe )
 {
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     queue_t *q = queue_init( myfree );
     for ( int i = 0; i < THREADS; i++ ) {
         thread_context_t *ctx = contexts + i;
@@ -150,6 +152,7 @@ TEST( QueueTest, ThreadSafe )
     for ( int i = 0; i < THREADS; i++ ) {
         pthread_join( threads[i], NULL );
     }
+    EXPECT_EQ( queue_length( q ), ( 100 * THREADS ) / 2 );
     queue_free( q );
 }
 
@@ -160,5 +163,6 @@ main( int argc, char **argv )
 {
     /* run google tests */
     ::testing::InitGoogleTest( &argc, argv );
+
     return RUN_ALL_TESTS();
 }
