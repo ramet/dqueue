@@ -264,6 +264,8 @@ static inline void call_once(once_flag *flag, void (*func)(void))
 
 #if __STDC_VERSION__ < 201112L || defined(C11THREADS_NO_TIMED_MUTEX)
 /* TODO take base into account */
+#if defined(__APPLE__) && defined(__MACH__)
+#else
 static inline int timespec_get(struct timespec *ts, int base)
 {
 	struct timeval tv;
@@ -274,6 +276,7 @@ static inline int timespec_get(struct timespec *ts, int base)
 	ts->tv_nsec = tv.tv_usec * 1000;
 	return base;
 }
+#endif
 #endif	/* not C11 */
 
 #endif	/* C11THREADS_H_ */

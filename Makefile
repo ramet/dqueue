@@ -1,4 +1,4 @@
-CFLAGS= -std=gnu99 -pthread -Wall -Wextra -pedantic -g
+CFLAGS= -std=c11 -pthread -Wall -Wextra -pedantic -g
 LDFLAGS= -pthread
 
 ALL: googletest sample test_queue gtest_queue
