@@ -9,12 +9,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include <stdbool.h>
-#ifdef __STDC_NO_THREADS__
-#include "c11threads.h"
-#else
-#include <threads.h>
-#endif
+#include "mymutex.h"
 
 //@{
 
@@ -31,7 +26,7 @@ struct queue_s {
     struct element_s *tail;
     unsigned int      length;
     gfree_function    free_func;
-    mtx_t             mutex;
+    mymutex           mutex;
 };
 
 struct element_s {

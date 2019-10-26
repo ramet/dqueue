@@ -14,7 +14,7 @@ queue_init( gfree_function f )
     q->length = 0;
     q->tail = q->head = NULL;
     q->free_func      = f;
-    mtx_init( &q->mutex, mtx_plain );
+    mutex_init( &q->mutex );
     return q;
 }
 
@@ -28,7 +28,7 @@ queue_push_head( queue_t *q, gpointer v )
     assert( e );
     e->value = v;
     e->prev  = NULL;
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     e->next = q->head;
     if ( q->head )
         q->head->prev = e;
@@ -36,7 +36,7 @@ queue_push_head( queue_t *q, gpointer v )
     if ( !q->tail )
         q->tail = e;
     q->length++;
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
 }
 
 /* *********************************************************** */
@@ -45,7 +45,7 @@ gpointer
 queue_pop_tail( queue_t *q )
 {
     assert( q );
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     assert( q->length > 0 );
     assert( q->tail );
     gpointer   v    = q->tail->value;
@@ -57,7 +57,7 @@ queue_pop_tail( queue_t *q )
     q->length--;
     if ( !q->tail )
         q->head = NULL;
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
     return v;
 }
 
@@ -67,7 +67,7 @@ void
 queue_drop_tail( queue_t *q )
 {
     assert( q );
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     assert( q->length > 0 );
     assert( q->tail );
     element_t *prev = q->tail->prev;
@@ -80,7 +80,7 @@ queue_drop_tail( queue_t *q )
     q->length--;
     if ( !q->tail )
         q->head = NULL;
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
 }
 
 /* *********************************************************** */
@@ -90,9 +90,9 @@ queue_length( queue_t *q )
 {
     assert( q );
     int length;
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     length = q->length;
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
     return length;
 }
 
@@ -103,9 +103,9 @@ queue_is_empty( queue_t *q )
 {
     assert( q );
     bool empty;
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     empty = ( q->length == 0 );
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
     return empty;
 }
 
@@ -116,10 +116,10 @@ queue_peek_head( queue_t *q )
 {
     assert( q );
     gpointer v;
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     assert( q->head );
     v = q->head->value;
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
     return v;
 }
 
@@ -130,10 +130,10 @@ queue_peek_tail( queue_t *q )
 {
     assert( q );
     gpointer v;
-    mtx_lock( &q->mutex );
+    mutex_lock( &q->mutex );
     assert( q->tail );
     v = q->tail->value;
-    mtx_unlock( &q->mutex );
+    mutex_unlock( &q->mutex );
     return v;
 }
 
@@ -151,7 +151,7 @@ queue_free( queue_t *q )
             q->free_func( tmp->value );
         free( tmp );
     }
-    mtx_destroy( &q->mutex );
+    mutex_destroy( &q->mutex );
     free( q );
 }
 
