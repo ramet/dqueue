@@ -9,6 +9,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include <stdbool.h>
 #include "mymutex.h"
 
 //@{

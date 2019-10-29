@@ -11,8 +11,8 @@ test_queue: test_queue.o queue.o mymutex.o
 test_queue.o: test_queue.c queue.h
 mymutex.o: mymutex.c mymutex.h
 
-gtest_queue: gtest_queue.o queue.o mymytex.o
-	g++ -pthread -std=c++11 gtest_queue.o queue.o -o gtest_queue -L./googletest/build/lib -lgtest
+gtest_queue: gtest_queue.o queue.o mymutex.o
+	g++ -pthread -std=c++11 gtest_queue.o queue.o mymutex.o -o gtest_queue -L./googletest/build/lib -lgtest
 gtest_queue.o: gtest_queue.cpp queue.h
 	g++ -pthread -std=c++11 -I./googletest/googletest/include -g -c gtest_queue.cpp
 

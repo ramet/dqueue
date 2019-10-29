@@ -26,22 +26,9 @@ mutex_lock( mymutex *mtx )
 }
 
 int
-atomic_compare_exchange_pseudo( int *addr1, int *addr2, int val )
-{
-    if ( *addr1 == *addr2 ) {
-        *addr1 = val;
-        return 1;
-    }
-    else {
-        *addr2 = *addr1;
-        return 0;
-    }
-}
-
-int
 mutex_unlock( mymutex *mtx )
 {
-    if ( unlikely( pthread_self() != mtx->owner ) ) {
+    if ( pthread_self() != mtx->owner ) {
         return 0;  // You can't unlock a mutex if you aren't the owner
     }
     int_least8_t one = 1;
@@ -60,4 +47,5 @@ int
 mutex_destroy( mymutex *mtx )
 {
     return 0;
+    (void)mtx;
 }
