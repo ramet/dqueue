@@ -6,7 +6,7 @@ mutex_init( mymutex *mtx )
     if ( !mtx ) {
         return 0;
     }
-    atomic_init( &mtx->lock, UNLOCKED );  // Not thread safe the user has to take care of this
+    atomic_init( &mtx->lock, UNLOCKED );  // Not thread safe
     mtx->owner = UNASSIGNED_OWNER;
     return 1;
 }
@@ -14,27 +14,26 @@ mutex_init( mymutex *mtx )
 int
 mutex_lock( mymutex *mtx )
 {
-    int_least8_t zero = UNLOCKED;
+    int zero = UNLOCKED;
     while ( !atomic_compare_exchange_weak_explicit(
         &mtx->lock, &zero, LOCKED, memory_order_acq_rel, memory_order_relaxed ) ) {
         zero = UNLOCKED;
-        sched_yield();  // Use system calls for scheduling speed
+        thrd_yield();  // Use system calls for scheduling speed
     }
     // We have the lock now!!!!
-    mtx->owner = pthread_self();
+    mtx->owner = thrd_current();
     return 1;
 }
 
 int
 mutex_unlock( mymutex *mtx )
 {
-    if ( pthread_self() != mtx->owner ) {
+    if ( thrd_current() != mtx->owner ) {
         return 0;  // You can't unlock a mutex if you aren't the owner
     }
-    int_least8_t one = 1;
+    int one = 1;
     mtx->owner       = UNASSIGNED_OWNER;
     // Critical section ends after this atomic
-    // Also this may fail, but that is fine
     if ( !atomic_compare_exchange_strong_explicit(
              &mtx->lock, &one, UNLOCKED, memory_order_acq_rel, memory_order_relaxed ) ) {
         // The mutex was never locked in the first place

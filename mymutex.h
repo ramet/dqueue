@@ -6,8 +6,8 @@
 #endif
 
 typedef struct mutex_ {
-    atomic_int_least8_t lock;
-    pthread_t           owner;
+    atomic_int lock;
+    thrd_t     owner;
 } mymutex;
 
 #define UNLOCKED 0
