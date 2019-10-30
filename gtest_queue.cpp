@@ -7,6 +7,9 @@
 #include "gtest/gtest.h"
 
 extern "C" {
+#if defined(HAVE_STD_ATOMIC)
+using namespace std;
+#endif
 #include "queue.h"
 }
 
