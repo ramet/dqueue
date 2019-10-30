@@ -1,12 +1,19 @@
+#ifndef CPP_ATOMIC_DEF
 #include <stdatomic.h>
+#define MY_ATOMIC_INT atomic_int
+#else
+#define MY_ATOMIC_INT std::atomic_int
+#endif
 #ifdef __STDC_NO_THREADS__
 #include "c11threads.h"
 #else
 #include <threads.h>
 #endif
 
+
+
 typedef struct mutex_ {
-    atomic_int lock;
+    MY_ATOMIC_INT lock;
     thrd_t     owner;
 } mymutex;
 

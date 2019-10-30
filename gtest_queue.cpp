@@ -6,10 +6,12 @@
 
 #include "gtest/gtest.h"
 
-extern "C" {
-#if defined(HAVE_STD_ATOMIC)
-using namespace std;
+#ifdef __cplusplus
+#include <atomic>
+#define CPP_ATOMIC_DEF
 #endif
+
+extern "C" {
 #include "queue.h"
 }
 
