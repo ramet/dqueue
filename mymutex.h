@@ -10,11 +10,9 @@
 #include <threads.h>
 #endif
 
-
-
 typedef struct mutex_ {
     MY_ATOMIC_INT lock;
-    thrd_t     owner;
+    thrd_t        owner;
 } mymutex;
 
 #define UNLOCKED 0

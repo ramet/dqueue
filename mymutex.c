@@ -31,8 +31,8 @@ mutex_unlock( mymutex *mtx )
     if ( thrd_current() != mtx->owner ) {
         return 0;  // You can't unlock a mutex if you aren't the owner
     }
-    int one = 1;
-    mtx->owner       = UNASSIGNED_OWNER;
+    int one    = LOCKED;
+    mtx->owner = UNASSIGNED_OWNER;
     // Critical section ends after this atomic
     if ( !atomic_compare_exchange_strong_explicit(
              &mtx->lock, &one, UNLOCKED, memory_order_acq_rel, memory_order_relaxed ) ) {
